@@ -1,0 +1,12 @@
+# Example IP file for testing
+# Format: Single IPs, CIDR notation, or IP ranges
+
+# Single IPs (public DNS servers)
+8.8.8.8
+1.1.1.1
+
+# Small range for testing
+192.168.1.1-192.168.1.10
+
+# CIDR notation (small subnet for testing)
+10.0.0.0/29
