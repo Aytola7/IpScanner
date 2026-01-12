@@ -2,10 +2,10 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+safeSocketConnect.txt
 # C extensions
 *.so
-
+safePing.txt
 # Distribution / packaging
 .Python
 build/
