@@ -337,15 +337,11 @@ python runer.py --workers 5 --concurrency 5
 2. یک branch جدید بسازید (`git checkout -b feature/amazing-feature`)
 3. تغییرات را commit کنید (`git commit -m 'Add amazing feature'`)
 4. Push کنید (`git push origin feature/amazing-feature`)
-5. یک Pull Request باز کنید
-
-## 📄 لایسنس
-
-[لایسنس را اینجا مشخص کنید]
+5. یک Pull Request باز کنید]
 
 ## 👤 نویسنده
 
-[نام نویسنده]
+[Aytola]
 
 ## 🙏 تشکر
 
