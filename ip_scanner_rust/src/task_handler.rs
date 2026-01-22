@@ -33,7 +33,7 @@ impl AppTaskHandler {
             move || {
                 Command::new("ping")
                     .arg("-c")
-                    .arg("1")
+                    .arg("2")
                     .arg("-W")
                     .arg("5")
                     .arg(&ip)
