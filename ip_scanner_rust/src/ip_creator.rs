@@ -10,6 +10,7 @@ use anyhow::{Result, Context};
 pub struct IpGroup {
     pub label: String,
     pub ips: Vec<String>,
+    pub is_single: bool,
 }
 
 pub fn create_ips(ip_file: &Path) -> Result<Vec<IpGroup>> {
@@ -29,9 +30,11 @@ pub fn create_ips(ip_file: &Path) -> Result<Vec<IpGroup>> {
         match expand_ip_line(&line) {
             Ok(ips) => {
                 if !ips.is_empty() {
+                    let is_single = is_single_ip_line(&line);
                     groups_raw.push(IpGroup {
                         label: line.clone(),
                         ips,
+                        is_single,
                     });
                 }
             }
@@ -41,14 +44,21 @@ pub fn create_ips(ip_file: &Path) -> Result<Vec<IpGroup>> {
         }
     }
 
-    // درخواست درصد از کاربر
-    print!("What percent of IPs to test? (0-100) [100]: ");
-    io::stdout().flush()?;
+    // بررسی اینکه آیا Range یا CIDR داریم یا نه
+    let has_ranges = groups_raw.iter().any(|g| !g.is_single);
     
-    let mut input = String::new();
-    io::stdin().read_line(&mut input)?;
-    
-    let percent: u32 = input.trim().parse().unwrap_or(100).min(100);
+    let percent: u32 = if has_ranges {
+        print!("What percent of IPs to test? (0-100) [100]: ");
+        io::stdout().flush()?;
+        
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+        
+        input.trim().parse().unwrap_or(100).min(100)
+    } else {
+        println!("All single IPs will be tested (no sampling for individual IPs)");
+        100
+    };
 
     // نمونه‌گیری
     let mut final_groups = Vec::new();
@@ -60,21 +70,37 @@ pub fn create_ips(ip_file: &Path) -> Result<Vec<IpGroup>> {
             continue;
         }
 
-        let sampled = if percent >= 100 {
-            group.ips
+        let (sampled, label_suffix) = if group.is_single {
+            // برای single IP ها، همه رو حفظ می‌کنیم
+            (group.ips, String::new())
         } else {
-            let k = ((total as f64 * (percent as f64 / 100.0)).ceil() as usize).max(1).min(total);
-            let mut ips = group.ips;
-            ips.partial_shuffle(&mut rng, k).0.to_vec()
+            // برای CIDR و Range ها، نمونه‌گیری می‌کنیم
+            let ips = if percent >= 100 {
+                group.ips
+            } else {
+                let k = ((total as f64 * (percent as f64 / 100.0)).ceil() as usize).max(1).min(total);
+                let mut ips = group.ips;
+                ips.partial_shuffle(&mut rng, k).0.to_vec()
+            };
+            (ips, format!(" (sample {}%)", percent))
         };
 
         final_groups.push(IpGroup {
-            label: format!("{} (sample {}%)", group.label, percent),
+            label: format!("{}{}", group.label, label_suffix),
             ips: sampled,
+            is_single: group.is_single,
         });
     }
 
     Ok(final_groups)
+}
+
+fn is_single_ip_line(line: &str) -> bool {
+    let s = line.trim();
+    if s.is_empty() || s.contains('/') || s.contains('-') {
+        return false;
+    }
+    s.parse::<Ipv4Addr>().is_ok()
 }
 
 fn expand_ip_line(line: &str) -> Result<Vec<String>> {

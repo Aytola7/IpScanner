@@ -1,0 +1,11 @@
+# Test file with mixed IP formats
+# Single IPs (should ALL be tested, no sampling)
+8.8.8.8
+1.1.1.1
+9.9.9.9
+
+# CIDR range (will be sampled based on user input)
+10.0.0.0/29
+
+# IP Range (will be sampled based on user input)
+192.168.1.1-192.168.1.20

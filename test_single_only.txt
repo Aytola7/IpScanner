@@ -1,0 +1,7 @@
+# Test file with ONLY single IPs
+# All these should be tested without asking for percentage
+8.8.8.8
+1.1.1.1
+9.9.9.9
+4.2.2.4
+208.67.222.222

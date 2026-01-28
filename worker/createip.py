@@ -74,7 +74,14 @@ def createip():
             all_single_ip_lines = False
         groups_raw.append({"label": ln, "ips": ex, "single_line": is_single})
 
-    percent = ask_int("What percent of IPs to test? (0-100)", 100, 0, 100)
+    # بررسی اینکه آیا Range یا CIDR داریم یا نه
+    has_ranges = any(not g["single_line"] for g in groups_raw)
+    
+    if has_ranges:
+        percent = ask_int("What percent of IPs to test? (0-100)", 100, 0, 100)
+    else:
+        percent = 100
+        print("All single IPs will be tested (no sampling for individual IPs)")
 
     final_groups = []
 
@@ -83,12 +90,21 @@ def createip():
         n = len(ips)
         if n == 0:
             continue
-        if percent >= 100:
+        
+        # برای single IP ها، همه رو حفظ می‌کنیم
+        if g["single_line"]:
             sampled = ips
+            label_suffix = ""
         else:
-            k = max(1, math.ceil(n * (percent / 100.0)))
-            k = min(k, n)
-            sampled = ips if k == n else random.sample(ips, k)
-        final_groups.append({"label": g["label"] + f"  (sample {percent}%)", "ips": sampled})
+            # برای CIDR و Range ها، نمونه‌گیری می‌کنیم
+            if percent >= 100:
+                sampled = ips
+            else:
+                k = max(1, math.ceil(n * (percent / 100.0)))
+                k = min(k, n)
+                sampled = ips if k == n else random.sample(ips, k)
+            label_suffix = f"  (sample {percent}%)"
+        
+        final_groups.append({"label": g["label"] + label_suffix, "ips": sampled})
 
     return final_groups
