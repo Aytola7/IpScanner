@@ -36,6 +36,10 @@ struct Args {
     /// Output file for successful socket connections
     #[arg(long, default_value = "safeSocketConnect.txt")]
     safe_socket: String,
+
+    /// Output file for successful SSH connections
+    #[arg(long, default_value = "safeSSH.txt")]
+    safe_ssh: String,
 }
 
 #[tokio::main]
@@ -63,6 +67,7 @@ async fn main() -> Result<()> {
     let task_handler = Arc::new(AppTaskHandler::new(
         args.safe_ping.clone(),
         args.safe_socket.clone(),
+        args.safe_ssh.clone(),
     ));
 
     // ساخت worker supervisors
